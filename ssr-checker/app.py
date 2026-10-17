@@ -272,6 +272,9 @@ def _render_report(report: dict, *, on_rerun=None) -> None:
     ssr, csr = report["ssr"], report["csr"]
     final_url = csr.get("final_url") or checked_url
 
+    if checked_url:
+        st.markdown(f"#### `{checked_url}`")
+
     _render_verdict(report)
 
     meta_left, meta_right = st.columns([4, 1])
@@ -344,6 +347,20 @@ def _resolve_urls(raw_text: str) -> tuple[list[str], list[str], int]:
 
     overflow = max(0, len(accepted) - MAX_BULK)
     return accepted[:MAX_BULK], invalid, overflow
+
+
+def _trim_bulk_input() -> None:
+    """Callback: drop everything past the first :data:`MAX_BULK` URLs.
+
+    Runs before the script reruns (button ``on_click``) so the text box is
+    rewritten in place and only the kept URLs are ever submitted.
+    """
+
+    raw = st.session_state.get("bulk_input", "")
+    urls, _invalid, overflow = _resolve_urls(raw)
+    st.session_state["bulk_trimmed"] = overflow
+    if overflow:
+        st.session_state["bulk_input"] = "\n".join(urls)
 
 
 def _run_bulk(urls: list[str], device_label: str, nonce: int) -> list[dict]:
@@ -472,7 +489,11 @@ def _bulk_view() -> None:
 
         _spacer, col_check = st.columns([4, 1])
         submitted = col_check.button(
-            "Check all", key="check-all", type="primary", use_container_width=True
+            "Check all",
+            key="check-all",
+            type="primary",
+            use_container_width=True,
+            on_click=_trim_bulk_input,
         )
 
     device_label = st.session_state.device_label
@@ -487,7 +508,13 @@ def _bulk_view() -> None:
                 preview = ", ".join(f"`{line}`" for line in invalid[:5])
                 more = "" if len(invalid) <= 5 else f" (+{len(invalid) - 5} more)"
                 st.warning(f"Skipped {len(invalid)} invalid line(s): {preview}{more}")
-            if overflow:
+            trimmed = st.session_state.pop("bulk_trimmed", 0)
+            if trimmed:
+                st.warning(
+                    f"Only the first {MAX_BULK} URLs are checked; "
+                    f"{trimmed} extra URL(s) were removed."
+                )
+            elif overflow:
                 st.warning(
                     f"Only the first {MAX_BULK} URLs are checked; "
                     f"{overflow} were ignored."
