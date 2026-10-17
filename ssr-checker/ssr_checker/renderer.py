@@ -199,3 +199,43 @@ def capture(
             browser.close()
 
     return {"ssr": ssr, "csr": csr}
+
+
+def capture_many(
+    urls: list[str],
+    device: Device,
+    *,
+    on_progress=None,
+    nav_timeout_ms: int = DEFAULT_NAV_TIMEOUT_MS,
+    settle_ms: int = DEFAULT_SETTLE_MS,
+) -> dict[str, dict[str, CaptureResult]]:
+    """Load several URLs through a single shared browser instance.
+
+    Each URL is rendered twice (JavaScript disabled, then enabled) exactly like
+    :func:`capture`, but the browser is launched once for the whole batch to
+    avoid repeated startup cost. A failure on one URL is recorded on that URL's
+    results and never aborts the batch.
+
+    Returns an ordered mapping ``url -> {"ssr": CaptureResult, "csr": ...}``.
+    ``on_progress(done, total, url)`` is called after each URL completes.
+    """
+
+    from playwright.sync_api import sync_playwright
+
+    results: dict[str, dict[str, CaptureResult]] = {}
+    total = len(urls)
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True, args=_LAUNCH_ARGS)
+        try:
+            for index, raw in enumerate(urls):
+                url = normalize_url(raw)
+                ssr = _capture_once(browser, device, url, False, nav_timeout_ms, settle_ms)
+                csr = _capture_once(browser, device, url, True, nav_timeout_ms, settle_ms)
+                results[url] = {"ssr": ssr, "csr": csr}
+                if on_progress is not None:
+                    on_progress(index + 1, total, url)
+        finally:
+            browser.close()
+
+    return results
