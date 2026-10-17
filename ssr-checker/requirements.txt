@@ -1,0 +1,10 @@
+streamlit>=1.36.0
+# >=1.50 lets pip resolve greenlet>=3.2.4, which ships cp314 wheels (required
+# for Streamlit Community Cloud's Python 3.14). 1.49 pinned greenlet==3.1.1,
+# which has no cp314 wheel and fails to compile.
+playwright==1.55.0
+# Force a greenlet with prebuilt wheels for Python 3.14 (Playwright's own
+# default pin can resolve to an older greenlet that has to compile and fails).
+greenlet>=3.2.4
+pillow>=10.3.0
+beautifulsoup4>=4.12.0
