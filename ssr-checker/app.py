@@ -94,37 +94,37 @@ _VERDICT_FILTERS = [
 
 _SSR_FAQS = [
     (
-        "What is an SSR checker?",
+        "Q: What is an SSR checker?",
         "An SSR checker compares how a page renders with JavaScript disabled "
         "versus enabled to measure how much of the content is server-side "
         "rendered. High coverage means crawlers see the same content that "
         "visitors do.",
     ),
     (
-        "What is the difference between SSR and CSR?",
+        "Q: What is the difference between SSR and CSR?",
         "SSR (server-side rendering) sends fully rendered HTML from the server, "
         "so content is visible immediately and to crawlers that do not run "
         "JavaScript. CSR (client-side rendering) builds the page in the browser "
         "with JavaScript, so crawlers that skip JavaScript can see an empty page.",
     ),
     (
-        "Is this SSR vs CSR checker free?",
+        "Q: Is this SSR vs CSR checker free?",
         "Yes. Check as many URLs as you like at no cost, one at a time or up to "
         "ten at once with the bulk checker.",
     ),
     (
-        "Can I test how Googlebot sees my page?",
+        "Q: Can I test how Googlebot sees my page?",
         "Yes. Choose a Googlebot Smartphone or Googlebot Desktop user-agent to "
         "see the JavaScript-disabled HTML the crawler receives, then compare it "
         "with the fully rendered page.",
     ),
     (
-        "Can I compare several URLs at once?",
+        "Q: Can I compare several URLs at once?",
         "Yes. Switch to Bulk · max 10, paste up to ten URLs (one per line) and "
         "get one result tab per URL, plus a summary table and CSV export.",
     ),
     (
-        "How accurate is the SSR and CSR comparison?",
+        "Q: How accurate is the SSR and CSR comparison?",
         "Checks run in a real headless Chromium browser at the selected "
         "viewport, so redirects, viewport-specific markup and late-loading "
         "scripts behave like a real visit. A pixel diff reports the mismatch "
