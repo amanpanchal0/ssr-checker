@@ -926,7 +926,9 @@ def _render_seo_content() -> None:
         )
 
     with st.expander("❓ Frequently asked questions", expanded=False):
-        faq_md = "\n\n".join(f"**{question}**\n{answer}" for question, answer in _SSR_FAQS)
+        faq_md = "\n\n".join(
+            f"**{question}**\n\n{answer}" for question, answer in _SSR_FAQS
+        )
         st.markdown(faq_md)
 
     _inject_structured_data()
