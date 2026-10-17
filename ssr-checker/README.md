@@ -73,6 +73,11 @@ repository** (not the app's folder). If your app lives in a subfolder such as
 `ssr-checker/app.py`, put `packages.txt` at the repo root next to that subfolder.
 A copy also lives in this folder for convenience.
 
+**Keep `packages.txt` to package names only** - one per line, no comments. The
+file is piped to `apt-get` via `xargs`, so a stray quote or apostrophe in a
+comment breaks the install (`xargs: unmatched single quote`).
+
+
 **Why these pins?** Community Cloud runs a recent Python (3.14 at the time of
 writing) on a `t64`-based distro (Debian 13 / Ubuntu 24.04), so:
 - Playwright `1.49.0` pinned `greenlet==3.1.1` (no cp314 wheel) and failed to

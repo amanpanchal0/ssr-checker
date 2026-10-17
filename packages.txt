@@ -1,7 +1,3 @@
-# Chromium system libraries for Playwright.
-# The Streamlit Community Cloud base image uses the "t64" package naming
-# (Debian 13 / Ubuntu 24.04), so the t64 variants are required. This list is
-# Playwright's own `install-deps` set for chromium on those distros.
 libasound2t64
 libatk-bridge2.0-0t64
 libatk1.0-0t64
