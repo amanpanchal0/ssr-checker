@@ -66,8 +66,10 @@ def _probe_chromium() -> tuple[bool, str]:
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True, args=_LAUNCH_ARGS)
             browser.close()
+        print("[ssr-checker] Chromium launch OK.", flush=True)
         return True, "Chromium is ready."
     except Exception as exc:  # noqa: BLE001
+        print(f"[ssr-checker] Chromium launch failed: {exc}", flush=True)
         return False, str(exc)
 
 
@@ -78,6 +80,7 @@ def install_chromium(timeout_s: int = 600) -> tuple[bool, str]:
     Python packages but never run a shell setup script.
     """
 
+    print("[ssr-checker] Running `playwright install chromium`...", flush=True)
     try:
         proc = subprocess.run(
             [sys.executable, "-m", "playwright", "install", "chromium"],
@@ -86,7 +89,13 @@ def install_chromium(timeout_s: int = 600) -> tuple[bool, str]:
             timeout=timeout_s,
         )
     except Exception as exc:  # noqa: BLE001
+        print(f"[ssr-checker] install failed: {exc}", flush=True)
         return False, f"Could not run `playwright install chromium`: {exc}"
+
+    if proc.stdout:
+        print("[ssr-checker] install stdout:\n" + proc.stdout.strip(), flush=True)
+    if proc.stderr:
+        print("[ssr-checker] install stderr:\n" + proc.stderr.strip(), flush=True)
 
     if proc.returncode != 0:
         detail = (proc.stderr or proc.stdout or "").strip()[-1500:]
