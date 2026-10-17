@@ -1,6 +1,0 @@
-streamlit>=1.36.0
-# Pinned: recent Playwright builds require system libs missing from Streamlit
-# Community Cloud's Debian 11 (bullseye) image. 1.49.0 is a known-good version.
-playwright==1.49.0
-pillow>=10.3.0
-beautifulsoup4>=4.12.0
