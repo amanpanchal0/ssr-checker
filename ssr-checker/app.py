@@ -28,7 +28,7 @@ from ssr_checker.renderer import (
 )
 
 st.set_page_config(
-    page_title="SSR Checker",
+    page_title="SSR Checker – SSR vs CSR Side-by-Side Checker",
     page_icon="🔍",
     layout="wide",
 )
@@ -59,6 +59,46 @@ _VERDICT_MARK = {
     "none": "🔴",
     "unknown": "⚪",
 }
+
+_SSR_FAQS = [
+    (
+        "What is an SSR checker?",
+        "An SSR checker compares how a page renders with JavaScript disabled "
+        "versus enabled to measure how much of the content is server-side "
+        "rendered. High coverage means crawlers see the same content that "
+        "visitors do.",
+    ),
+    (
+        "What is the difference between SSR and CSR?",
+        "SSR (server-side rendering) sends fully rendered HTML from the server, "
+        "so content is visible immediately and to crawlers that do not run "
+        "JavaScript. CSR (client-side rendering) builds the page in the browser "
+        "with JavaScript, so crawlers that skip JavaScript can see an empty page.",
+    ),
+    (
+        "Is this SSR vs CSR checker free?",
+        "Yes. Check as many URLs as you like at no cost, one at a time or up to "
+        "ten at once with the bulk checker.",
+    ),
+    (
+        "Can I test how Googlebot sees my page?",
+        "Yes. Choose a Googlebot Smartphone or Googlebot Desktop user-agent to "
+        "see the JavaScript-disabled HTML the crawler receives, then compare it "
+        "with the fully rendered page.",
+    ),
+    (
+        "Can I compare several URLs at once?",
+        "Yes. Switch to Bulk · max 10, paste up to ten URLs (one per line) and "
+        "get one result tab per URL, plus a summary table and CSV export.",
+    ),
+    (
+        "How accurate is the SSR and CSR comparison?",
+        "Checks run in a real headless Chromium browser at the selected "
+        "viewport, so redirects, viewport-specific markup and late-loading "
+        "scripts behave like a real visit. A pixel diff reports the mismatch "
+        "percentage between the two renders.",
+    ),
+]
 
 
 @st.cache_resource(show_spinner="Preparing the browser (first run only)...")
@@ -631,11 +671,124 @@ def _single_view() -> None:
     _render_report(report, on_rerun=_single_rerun)
 
 
+def _inject_structured_data() -> None:
+    """Emit JSON-LD (WebApplication + FAQPage) for search engines."""
+
+    faq_schema = [
+        {
+            "@type": "Question",
+            "name": question,
+            "acceptedAnswer": {"@type": "Answer", "text": answer},
+        }
+        for question, answer in _SSR_FAQS
+    ]
+
+    blocks = [
+        {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "SSR Checker",
+            "alternateName": "SSR vs CSR Side-by-Side Checker",
+            "applicationCategory": "SEO Tool",
+            "operatingSystem": "Web",
+            "browserRequirements": "Requires JavaScript",
+            "description": (
+                "Free SSR checker that loads a URL with JavaScript disabled "
+                "(server-side rendered) and enabled (client-side rendered) and "
+                "compares them side by side with pixel and visible-text diffs."
+            ),
+            "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+            "featureList": [
+                "Side-by-side SSR and CSR comparison with synced scrolling",
+                "Pixel difference overlay and mismatch percentage",
+                "Visible-text diff of content only added by JavaScript",
+                "Googlebot Smartphone and Desktop, plus Chrome mobile/desktop",
+                "Bulk check up to 10 URLs at once",
+            ],
+        },
+        {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": faq_schema,
+        },
+    ]
+
+    for block in blocks:
+        st.markdown(
+            f'<script type="application/ld+json">{json.dumps(block)}</script>',
+            unsafe_allow_html=True,
+        )
+
+
+def _render_seo_content() -> None:
+    """Keyword-rich, genuinely useful content, kept below the fold.
+
+    Long copy lives in collapsed expanders so it never gets in the way of the
+    tool itself.
+    """
+
+    st.divider()
+    st.header("SSR & CSR checker: server-rendered vs client-rendered pages")
+    st.markdown(
+        "This free **SSR checker** loads a URL twice in a real headless Chromium "
+        "browser - once with JavaScript disabled, which is the **server-side "
+        "rendered (SSR)** version a non-executing crawler such as Googlebot sees, "
+        "and once with JavaScript enabled, which is the fully **client-side "
+        "rendered (CSR)** version a visitor sees. The **side-by-side SSR and CSR "
+        "checker** highlights pixel differences and any text that only appears "
+        "after JavaScript runs, so you can tell at a glance whether a page is "
+        "renderable and indexable without JavaScript."
+    )
+
+    with st.expander("What are SSR and CSR?"):
+        st.markdown(
+            "- **SSR (server-side rendering):** the server returns fully rendered "
+            "HTML, so content is visible immediately and to crawlers that do not "
+            "execute JavaScript.\n"
+            "- **CSR (client-side rendering):** the browser downloads a minimal "
+            "HTML shell and builds the page with JavaScript, so crawlers that "
+            "skip JavaScript can see little or no content.\n\n"
+            "Most modern frameworks - Next.js, Nuxt, React, Vue, Angular and "
+            "others - support both, often as a mix."
+        )
+
+    with st.expander("How the side-by-side SSR vs CSR comparison works"):
+        st.markdown(
+            "1. Pick a **user-agent**: Googlebot Smartphone/Desktop or a real "
+            "Chrome mobile/desktop profile.\n"
+            "2. The URL is rendered twice at the same viewport with JavaScript "
+            "**off** (SSR) and JavaScript **on** (CSR).\n"
+            "3. Both screenshots appear **side by side with synced scrolling**, "
+            "plus a **pixel-difference overlay** (red = differs).\n"
+            "4. A **visible-text diff** lists exactly what only appears once "
+            "JavaScript runs, and a **coverage verdict** estimates how much a "
+            "crawler sees without JavaScript."
+        )
+
+    with st.expander("Why check SSR for SEO?"):
+        st.markdown(
+            "If your content is client-side rendered, search and social crawlers "
+            "may see an empty page. Run this **SSR SEO checker** to confirm your "
+            "titles, headings, body copy and internal links are present in the "
+            "initial HTML, and to catch **server-side rendering** regressions "
+            "before they affect rankings."
+        )
+
+    st.subheader("Frequently asked questions")
+    for question, answer in _SSR_FAQS:
+        with st.expander(question):
+            st.markdown(answer)
+
+    _inject_structured_data()
+
+
 def main() -> None:
     st.title("SSR Checker")
     st.caption(
-        "Load a URL twice - once with JavaScript disabled (server-rendered) and "
-        "once with JavaScript enabled (regular) - and compare them side by side."
+        "Compare how any URL renders with JavaScript disabled (server-side "
+        "rendering, SSR) versus enabled (client-side rendering, CSR). This free "
+        "side-by-side SSR & CSR checker shows pixel and text diffs so you can "
+        "see exactly what Googlebot sees without JavaScript."
     )
 
     ok, message = _check_browser()
@@ -662,6 +815,8 @@ def main() -> None:
         _bulk_view()
     else:
         _single_view()
+
+    _render_seo_content()
 
 
 if __name__ == "__main__":
